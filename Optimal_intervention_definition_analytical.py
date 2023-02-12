@@ -155,7 +155,7 @@ def compute_c(n, B, g, og_size, opt_size, guess, trials = MAX_TRIALS):
 #         return np.array([np.inf, np.inf])
 
 #Executes the above defined functions based on the given parameters: n is group size vector, B is transmission matrix and g is recovery rate
-def Executor(n, B, g, A, guess, show_output = False):
+def Executor(n, B, g, A, show_output = False):
     gr = growth_rate(n, B, g)
     if gr<POS_ZERO:
         if show_output:
@@ -163,7 +163,7 @@ def Executor(n, B, g, A, guess, show_output = False):
     else:
         fs_og = compute_FS(n, B, g)
         fs_opt, sol_type = choose_minimum_cost(n, B, g, A)
-        c = compute_c(n, B, g, fs_og, fs_opt.copy(), guess)
+        #c = compute_c(n, B, g, fs_og, fs_opt.copy(), guess)
         if show_output:
             print('====== Result: Exact Solution ====== \n')
             print('The given cost function weights are: ', A)
@@ -171,10 +171,10 @@ def Executor(n, B, g, A, guess, show_output = False):
             print('The basic reproduction number is: ', 1+gr/g)
             print('The final size for the unmitigated epidemic: ', fs_og)
             print('The final size which minimises the cost:     ', fs_opt)
-            print('The % change in transmission in the two groups: ', (-c*100).tolist())
+            #print('The % change in transmission in the two groups: ', (-c*100).tolist())
             print('The solution type: ', sol_type)
             print('\n====== *** ====== *** ====== *** ====== \n')
-        return (fs_og, fs_opt, c, gr, sol_type) 
+        return (fs_og, fs_opt, gr, sol_type) 
         
     
     

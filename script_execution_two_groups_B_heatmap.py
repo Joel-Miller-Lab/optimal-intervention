@@ -32,7 +32,7 @@ b1_list = np.arange(0.05, 3.5, 0.05)
 b2_list = np.arange(0.05, 3.5, 0.05)
 
 #%% Empty lists
-b1, b2, gr, FS1_int, FS1_ord, FS2_int, FS2_ord, c1, c2, s_type = [], [], [], [], [], [], [], [], [], []
+b1, b2, gr, FS1_int, FS1_ord, FS2_int, FS2_ord, s_type = [], [], [], [], [], [], [], []
 
 #%% Looping over parameters and call Executor function
 for index1, x in enumerate(b1_list):
@@ -44,27 +44,18 @@ for index1, x in enumerate(b1_list):
         tmp = exact.growth_rate(n, B, gamma)
         gr.append(tmp)
         if tmp>POS_ZERO:
-            if smethod == 0:
-                guess = False
-                if index1 != 0 and index2 != 0:
-                    if ~np.isnan(c1[-1]):
-                        guess = np.array([c1[-1], c2[-1]])
-                
-                fs_og, fs_opt, c, rate, st = exact.Executor(n, B, gamma, A, guess)
+            if smethod == 0:                
+                fs_og, fs_opt, rate, st = exact.Executor(n, B, gamma, A)
             else:
                 fs_og, fs_opt, rate = numerical.Executor(n, B, gamma, A)
             FS1_ord.append(fs_og[0])
             FS2_ord.append(fs_og[1])
             FS1_int.append(fs_opt[0])
             FS2_int.append(fs_opt[1])
-            c1.append(c[0])
-            c2.append(c[1])
             if smethod == 0:
                 s_type.append(st)
                 
         else:
-            c1.append(float('NaN'))
-            c2.append(float('NaN'))
             FS1_ord.append(float('NaN'))
             FS2_ord.append(float('NaN'))
             FS1_int.append(float('NaN'))
@@ -80,9 +71,7 @@ FS1_ord_matrix = np.real(np.reshape(FS1_ord, (len(b1_list), len(b2_list))))
 FS2_ord_matrix = np.real(np.reshape(FS2_ord, (len(b1_list), len(b2_list))))
 FS1_int_matrix = np.real(np.reshape(FS1_int, (len(b1_list), len(b2_list))))
 FS2_int_matrix = np.real(np.reshape(FS2_int, (len(b1_list), len(b2_list))))
-c1_matrix = np.real(np.reshape(c1, (len(b1_list), len(b2_list))))
-c2_matrix = np.real(np.reshape(c2, (len(b1_list), len(b2_list))))
-b1, b2, c1, c2 = np.array(b1), np.array(b2), np.array(c1), np.array(c2)
+b1, b2 = np.array(b1), np.array(b2)
 if smethod == 0:
     s_type_matrix = np.real(np.reshape(s_type, (len(b1_list), len(b2_list))))
 
@@ -190,9 +179,6 @@ else:
 #%%% Plotting percentage change in final size
 plot1 = ((FS1_int_matrix - FS1_ord_matrix)/FS1_ord_matrix).T*100
 plot2 = ((FS2_int_matrix - FS2_ord_matrix)/FS2_ord_matrix).T*100
-
-b1_c1_neg, b2_c1_neg = b1[(c1<0)], b2[(c1<0)]
-b1_c2_neg, b2_c2_neg = b1[(c2<0)], b2[(c2<0)]
 
 p1max, p2max, p1min, p2min = np.nanmax(plot1), np.nanmax(plot2), np.nanmin(plot1), np.nanmin(plot2)
 pmax = np.amax([p1max, p2max])
@@ -344,80 +330,3 @@ if smethod == 0:
     plt.savefig('analytical_solution_type_n1_%.2f_n2_%.2f_alpha_%.2f.pdf'%(n[0], n[1], alpha))
     plt.savefig('analytical_solution_type_n1_%.2f_n2_%.2f_alpha_%.2f.png'%(n[0], n[1], alpha), dpi=600)
 
-#%%% Plotting c
-if smethod == 0:
-    #plot = np.array(s_type).copy()
-    plot1 = c1_matrix.T.copy()
-    plot2 = c2_matrix.T.copy()
-    #clrs = ['darkslateblue', 'olivedrab', 'firebrick', 
-    #        'darkmagenta', 'slategray', 'darkslategray']#, 'gainsboro']
-    
-    p1max, p2max, p1min, p2min = np.nanmax(plot1), np.nanmax(plot2), np.nanmin(plot1), np.nanmin(plot2)
-    pmax = np.amax([p1max, p2max])
-    pmin = np.amax([p1min, p2min])
-
-    fig, ax = plt.subplots(1, 2, figsize = (5*3.5/8*2.2, 5*3.5/8), constrained_layout = True) 
-    plt.suptitle(r'$n_1 = %.2f, \ n_2 = %.2f, \ \alpha = %.2f \ G_{kl} = n_k b_k b_l ((1-\alpha)\delta_{kl} + \alpha)$'%(n[0], n[1], alpha) + '\n' + r'$A$ = [%.2f, %.2f]'%(A[0], A[1]), fontsize = FontSize-1)
-
-    custom_cmap_1 = cm.get_cmap('PiYG').copy()
-    custom_cmap_2 = cm.get_cmap('PiYG').copy()
-    custom_cmap_1.set_bad(color='none')
-    custom_cmap_2.set_bad(color='none')
-
-    divnorm1 = colors.TwoSlopeNorm(vmax=pmax, vcenter=0)#, vmax=pmax)
-    divnorm2 = colors.TwoSlopeNorm(vmax=pmax, vcenter=  0)#, vmax=pmax)
-
-    im1 = ax[0].imshow(plot1, cmap = custom_cmap_1, norm = divnorm1, extent = (b1[0], b1[-1], b2[0], b2[-1]), origin = 'lower', interpolation = 'none', aspect = 'equal')
-    cb1 = fig.colorbar(im1, ax=ax[0], shrink = 1)
-    cb1.outline.set_visible(False)
-    cb1.ax.tick_params(width=0.4, labelsize = FontSize-3)
-
-    im2 = ax[1].imshow(plot2, cmap = custom_cmap_2, norm = divnorm2, extent = (b1[0], b1[-1], b2[0], b2[-1]), origin = 'lower', interpolation = 'none', aspect = 'equal')
-    cb2 = fig.colorbar(im2, ax=ax[1], shrink = 1)
-    cb2.outline.set_visible(False)
-    cb2.ax.tick_params(width=0.4, labelsize = FontSize-3)
-
-
-
-    ax[0].fill_between([b1[0], b1_NA_max], y1 = b2[0], y2 = b2_NA_max, hatch = '++++',
-                      color = 'none', edgecolor = 'gray', zorder = 0, lw = 0)
-    ax[1].fill_between([b1[0], b1_NA_max], y1 = b2[0], y2 = b2_NA_max, hatch = '++++',
-                      color = 'none', edgecolor = 'gray', zorder = 0, lw = 0)
-    #ax[0].scatter(plot_b1_NA, plot_b2_NA, edgecolor = 'k', facecolor = 'none', marker = 's', s = 1, lw = 0.01)
-
-    #ax[0].set_title(r'$\%$ change in final size'+ '\n in group 1', fontsize = FontSize - 1)
-    #ax[1].set_title(r'$\%$ change in final size'+ '\n in group 2', fontsize = FontSize - 1)
-
-
-    for ax in ax.reshape(-1):
-        #ax.set_facecolor('none')
-        
-        #Set axis labels
-        ax.set_xlabel(r'$b_1$')
-        ax.set_ylabel(r'$b_2$')
-        
-        # Hide the right and top spines
-        ax.spines['right'].set_visible(False)
-        ax.spines['top'].set_visible(False)
-
-        #Set limits
-        ax.set_xlim(0, )
-        ax.set_ylim(0, )
-
-        #Set tick numbers
-        ax.locator_params('x', nbins = 4)
-        ax.locator_params('y', nbins = 4)
-
-        ax.tick_params('both', which = 'both', direction = 'in', labelsize = FontSize-1, width = 0.4)
-
-        # Only show ticks on the left and bottom spines
-        ax.yaxis.set_ticks_position('left')
-        ax.xaxis.set_ticks_position('bottom')
-
-    if smethod == 0:
-        fig.savefig('analytical_c_n1_%.2f_n2_%.2f_alpha_%.2f.pdf'%(n[0], n[1], alpha))
-        fig.savefig('analytical_c_n1_%.2f_n2_%.2f_alpha_%.2f.png'%(n[0], n[1], alpha), dpi=600)
-
-    # else: 
-    #     fig.savefig('numerical_pc_change_final_size_n1_%.2f_n2_%.2f_alpha_%.2f.pdf'%(n[0], n[1], alpha))
-    #     fig.savefig('numerical_pc_change_final_size_n1_%.2f_n2_%.2f_alpha_%.2f.png'%(n[0], n[1], alpha), dpi=600)

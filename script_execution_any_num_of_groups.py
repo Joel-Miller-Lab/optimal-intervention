@@ -25,4 +25,6 @@ alpha = 1.5 #For parameter variation. B_12 = b1*b2*alpha, B21 = b1*b2*alpha, B11
 
 B = np.array([[b1**2, b1*b2*alpha], [b2*b1*alpha, b2**2]])
 
-fs_og, fs_opt_numerical = numerical.Executor(n, B, gamma, A, True)
+#B = transmission matrix. 
+
+fs_og, fs_opt_numerical, gr = numerical.Executor(n, B, gamma, A, True)
