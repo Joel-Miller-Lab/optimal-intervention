@@ -6,3 +6,5 @@ script_execution_two_groups.py is a script that would allow you to set the param
 script_execution_any_num_of_groups.py lets you do the same for an arbitrary number of groups but uses the numerical solver.
 
 The heatmap file produces the figure given in the appendix of the paper.
+
+The ipython notebook is work in progress and is not related to the current paper.
