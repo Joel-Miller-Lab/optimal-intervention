@@ -1,4 +1,8 @@
 # optimal-intervention
-1. Simulation for multi-group optimal intervention
+Optimal_intervention_definition files contain the function definitions for computing herd immunity, final size etc. The analytical.py file uses analytical formulae coded in python, for two groups to determine the intervention. The numerical.py file uses an optimiser from scipy to determine the intervention. 
 
-2. Typically epidemic modelling involves assumptions where a diverse population is coarse grained into few a groups, say by age, and is studied using the next generation matrix. In the case of optimal intervention where the objective is to avoid a 2nd wave and reduce the epidemic size, such coarse graining may fail to recognise outlier groups due to the inherent averaging assumptions involved.
+script_execution_two_groups.py is a script that would allow you to set the parameters of the model, specify the cost function, select either the analytical or numerical solver, and it will return the final size without intervention and with optimal intervention.
+
+script_execution_any_num_of_groups.py lets you do the same for an arbitrary number of groups but uses the numerical solver.
+
+The heatmap file produces the figure given in the appendix of the paper.
