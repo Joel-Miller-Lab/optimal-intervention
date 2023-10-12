@@ -22,8 +22,13 @@ def growth_rate(s, B, g):
     return gr 
 
 # Equation for the final size x, n is the group size, g is recovery rate
-def FS(x, B, n, g): 
+def FS_eqn(x, B, n, g): 
     return [x[k] - n[k]*(1-np.exp(-np.sum(B[k]*x/g))) for k in range(len(n))]
+
+# Equation for the final size x, n is the group size, g is recovery rate
+def FS_fn(x, B, n, g): 
+    return np.array([n[k]*(1-np.exp(-np.sum(B[k]*x/g))) for k in range(len(n))])
+
 
 #Expression for linear combination of final sizes 'x'
 def LCFS(a, x): 
@@ -32,14 +37,29 @@ def LCFS(a, x):
 #Function to compute final size
 def compute_FS(n, B, g, trials = MAX_TRIALS):    
     for count in range(trials):
-        root = so.root(FS, np.random.uniform(0.5, 1)*n, args = (B, n, g)) 
+        root = so.root(FS_eqn, np.random.uniform(0.5, 1)*n, args = (B, n, g)) 
         if root.success == True and np.all(root.x >= np.zeros(len(n))) and np.all(root.x <= n):
             break
     if root.success == False:
         return np.array([-1, -1])
     else:
         return root.x
-
+    
+def compute_FS_alt(n, B, g, max_trials = 50):    
+    x = np.random.uniform(0, 1)*n
+    i = 0
+    while True:
+        x_old = x.copy()
+        x = FS_fn(x_old, B, n, g)
+        i=i+1
+        #if np.linalg.norm((x-x_old)/(x_old)) < reltol or 
+        if i > max_trials:
+            break
+    if np.all(x >= 0) and np.all(x <= n):
+        return x
+    else:
+        return -1*np.ones(len(n))
+    
 #Finds the final sizes which minimise LCFS
 def minimise_cost(n, B, g, A, trials = MAX_TRIALS):     
     constraint_growth_rate = optimize.NonlinearConstraint(lambda x: growth_rate(n-x, B, g), lb=0, ub=0) #since x is final size, we pass the s array = n-x to the growth rate function
@@ -51,6 +71,18 @@ def minimise_cost(n, B, g, A, trials = MAX_TRIALS):
             min_cost = LCFS(A, min_cost_sol.x)
             mcx = min_cost_sol.x
     return mcx
+
+def minimise_cost_alt(n, B, g, A, trials = MAX_TRIALS):     
+    constraint_growth_rate = optimize.NonlinearConstraint(lambda x: growth_rate(n-x, B, g), lb=0, ub=0) #since x is final size, we pass the s array = n-x to the growth rate function
+    min_cost = LCFS(A, n)
+    for j in range(trials):
+        optimize_ic = np.random.rand(len(n))*n        
+        min_cost_sol = optimize.minimize(LCFS, method = 'trust-ncg', x0 = optimize_ic, args = (A), constraints = (constraint_growth_rate), bounds = [(0, n[k]) for k in range(len(n))])
+        if LCFS(A, min_cost_sol.x) < min_cost:
+            min_cost = LCFS(A, min_cost_sol.x)
+            mcx = min_cost_sol.x
+    return mcx
+
 
 #Equation for change in transmission B_kl --> B_kl (1-c_k)(1-c_l)
 def change_transmission(c, B, r, n):
@@ -108,9 +140,28 @@ def Executor(n, B, g, A, show_output = False):
             print('The basic reproduction number is: ', 1+gr/g)
             print('The final size for the unmitigated epidemic: ', fs_og)
             print('The final size which minimises the cost:     ', fs_opt)
+            print('The effective R at the obtained optimum :     ', 1 + growth_rate(n - fs_opt, B, g)/g)
             print('\n====== *** ====== *** ====== *** ====== \n')
         return (fs_og, fs_opt, gr) 
         
+def Executor_alt(n, B, g, A, show_output = False):
+    gr = growth_rate(n, B, g)
+    if gr<POS_ZERO:
+        if show_output:
+            print('R0 too small (<%f) to compute final size'%POS_ZERO)
+    else:
+        fs_og = compute_FS(n, B, g)
+        fs_opt = minimise_cost_alt(n, B, g, A)
+        #c = compute_c(n, B, g, fs_opt)
+        if show_output:
+            print('====== Result: Numerical Solution ====== \n')
+            print('The given cost function weights are: ', A)
+            print('For the given group sizes: ', n, ', transmission matrix: \n', B, '\n and recovery rate: ', g)
+            print('The basic reproduction number is: ', 1+gr/g)
+            print('The final size for the unmitigated epidemic: ', fs_og)
+            print('The final size which minimises the cost:     ', fs_opt)
+            print('\n====== *** ====== *** ====== *** ====== \n')
+        return (fs_og, fs_opt, gr) 
     
 # =============================================================================
 #     
