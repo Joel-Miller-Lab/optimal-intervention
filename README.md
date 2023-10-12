@@ -7,6 +7,6 @@ script_execution_any_num_of_groups.py lets you do the same for an arbitrary numb
 
 The heatmap file produces the figure given in the appendix of the paper.
 
-script_execution_any_num_of_groups_real_world_contact_matrix.py computes the optimal intervention using contact matrix from Wallinga 2007 (http://academic.oup.com/aje/article/164/10/936/162511/Using-Data-on-Social-Contacts-to-Estimate) and CFRs of various diseases.
+script_execution_any_num_of_groups_real_matrix.py computes the optimal intervention using contact matrix from Wallinga 2007 (http://academic.oup.com/aje/article/164/10/936/162511/Using-Data-on-Social-Contacts-to-Estimate) and CFRs of various diseases.
 
 The ipython notebook is work in progress and is not related to the current paper.
